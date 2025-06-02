@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Emergency Management Dashboard</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Mapbox GL JS -->
+    <link href="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css" rel="stylesheet" />
+    <script src="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js"></script>
+
+    <style>
+      .forecast-scroll::-webkit-scrollbar {
+        height: 8px;
+      }
+      .forecast-scroll::-webkit-scrollbar-thumb {
+        background-color: #2563eb;
+        border-radius: 10px;
+      }
+      #map {
+        width: 100%;
+        height: 450px;
+        border-radius: 0.5rem;
+        position: relative;
+        box-shadow: 0 4px 14px rgb(0 0 0 / 0.1);
+        border: 1px solid #d1d5db;
+      }
+      #map-loader svg {
+        stroke: #2563eb;
+        stroke-linecap: round;
+      }
+    </style>
+  </head>
+
+  <body class="bg-gray-50 min-h-screen font-sans text-gray-800">
+    <header class="bg-white shadow-md py-6 px-8 flex flex-col md:flex-row md:items-center md:justify-between sticky top-0 z-20">
+      <h1 class="text-3xl font-extrabold tracking-tight text-gray-900 mb-3 md:mb-0 select-none">
+        Emergency Management Dashboard
+      </h1>
+      <div class="text-gray-600 text-sm md:text-base space-x-4">
+        <span>Welcome, <strong class="text-gray-800">{{ name }}</strong></span>
+        <span>|</span>
+        <span>{{ stakeholder }}</span>
+        <span>|</span>
+        <span>{{ district }}</span>
+      </div>
+    </header>
+
+    <main class="container max-w-7xl mx-auto px-6 py-10 space-y-12">
+      <!-- Weather Section -->
+      <section class="bg-white rounded-lg shadow-lg p-8 flex flex-col md:flex-row items-center md:items-start space-y-6 md:space-y-0 md:space-x-10">
+        {% if weather.error %}
+        <p class="text-red-600 font-semibold text-lg">{{ weather.error }}</p>
+        {% else %}
+        <img src="https:{{ weather.icon }}" alt="{{ weather.condition }}" class="w-28 h-28 md:w-32 md:h-32" />
+        <div class="flex flex-col space-y-2">
+          <h2 class="text-4xl font-extrabold text-gray-900">{{ weather.temperature }}&#8451;</h2>
+          <p class="text-xl text-gray-700 capitalize tracking-wide">{{ weather.condition }}</p>
+          <div class="flex space-x-6 text-gray-600 font-medium text-sm">
+            <p><span class="font-semibold">Humidity:</span> {{ weather.humidity }}%</p>
+            <p><span class="font-semibold">Wind:</span> {{ weather.wind_kph }} km/h</p>
+          </div>
+        </div>
+        {% endif %}
+      </section>
+
+      <!-- Forecast Section -->
+      <section class="bg-white rounded-lg shadow-lg p-8">
+        <h3 class="text-2xl font-semibold text-gray-900 mb-6 border-b border-gray-200 pb-3 select-none">
+          3-Day Weather Forecast
+        </h3>
+        {% if forecast|length == 0 %}
+        <p class="text-gray-600 text-center text-lg">No forecast data available.</p>
+        {% else %}
+        <div class="grid grid-cols-1 sm:grid-cols-3 md:grid-cols-7 gap-6 forecast-scroll overflow-x-auto px-1">
+          {% for day in forecast %}
+          <div class="flex flex-col items-center bg-blue-50 rounded-lg p-5 shadow-md hover:shadow-lg transition-shadow duration-300 cursor-default select-none">
+            <p class="font-semibold text-gray-700 mb-2">{{ day.date }}</p>
+            <img src="https:{{ day.icon }}" alt="{{ day.condition }}" class="w-14 h-14 mb-3" />
+            <p class="text-sm text-gray-600 capitalize">{{ day.condition }}</p>
+            <p class="text-xl font-semibold text-blue-700 mt-2">{{ day.avg_temp }}&#8451;</p>
+          </div>
+          {% endfor %}
+        </div>
+        {% endif %}
+      </section>
+
+      <!-- Flood Map Section -->
+      <section class="bg-white rounded-lg shadow-lg p-8">
+        <h3 class="text-2xl font-semibold text-gray-900 mb-6 border-b border-gray-200 pb-3 select-none">
+          Flood Risk Map
+        </h3>
+        <div id="map" class="relative rounded-md overflow-hidden">
+          <div id="map-loader" class="absolute inset-0 flex flex-col items-center justify-center bg-white bg-opacity-90 z-30 space-y-3">
+            <svg class="animate-spin h-12 w-12 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+            </svg>
+            <span class="text-blue-600 font-semibold text-lg">Loading flood risk map...</span>
+          </div>
+        </div>
+
+        <!-- Dynamic Suggestions Section -->
+        <section id="suggestion-container"
+          class="bg-yellow-50 border border-yellow-300 rounded-xl p-6 max-w-4xl mx-auto mt-8 shadow-md hidden"
+          aria-label="Stakeholder Suggestions"
+        >
+          <h2 class="text-2xl font-bold text-yellow-800 mb-4">Stakeholder Suggestions</h2>
+          <div id="suggestions" class="text-yellow-900 text-lg space-y-4"></div>
+        </section>
+      </section>
+    </main>
+
+    <footer class="bg-white text-center text-gray-500 py-6 mt-16 border-t border-gray-200 select-none">
+      &copy; 2025 District Emergency Management. All rights reserved.
+    </footer>
+
+    <script>
+      mapboxgl.accessToken = "{{ MAPBOX_API_KEY | default('') }}";
+
+      if (!mapboxgl.accessToken || mapboxgl.accessToken === "None") {
+        alert("⚠️ Mapbox access token is missing. Please check your .env and backend.");
+      } else {
+        const centerFallback = [80.2707, 13.0827]; // Default to Chennai
+
+        async function loadFloodData(district, stakeholder) {
+          try {
+            const res = await fetch(`/api/flood-risk?district=${encodeURIComponent(district)}&stakeholder=${encodeURIComponent(stakeholder)}`);
+            const data = await res.json();
+            const geojson = data.geojson || data;
+
+            const loader = document.getElementById("map-loader");
+
+            let mapCenter = centerFallback;
+            if (geojson.features?.length > 0) {
+              const coords = geojson.features.flatMap(f =>
+                f.geometry.type === "Polygon"
+                  ? f.geometry.coordinates.flat(1)
+                  : f.geometry.coordinates.flat(2)
+              );
+              if (coords.length > 0) {
+                const lons = coords.map(c => c[0]);
+                const lats = coords.map(c => c[1]);
+                mapCenter = [(Math.min(...lons) + Math.max(...lons)) / 2, (Math.min(...lats) + Math.max(...lats)) / 2];
+              }
+            }
+
+            const map = new mapboxgl.Map({
+              container: "map",
+              style: "mapbox://styles/mapbox/light-v11",
+              center: mapCenter,
+              zoom: 10,
+              attributionControl: false
+            });
+
+            map.on("load", () => {
+              map.addSource("flood-zones", { type: "geojson", data: geojson });
+
+              map.addLayer({
+                id: "flood-risk-layer",
+                type: "fill",
+                source: "flood-zones",
+                paint: {
+                  "fill-color": [
+                    "match",
+                    ["get", "risk_level"],
+                    "High", "#dc2626",
+                    "Moderate", "#f97316",
+                    "Low", "#22c55e",
+                    "#94a3b8"
+                  ],
+                  "fill-opacity": 0.55
+                }
+              });
+
+              map.addLayer({
+                id: "flood-risk-outline",
+                type: "line",
+                source: "flood-zones",
+                paint: {
+                  "line-color": "#475569",
+                  "line-width": 1.5
+                }
+              });
+
+              const bounds = new mapboxgl.LngLatBounds();
+              geojson.features.forEach((f) => {
+                const coords = f.geometry.type === "Polygon"
+                  ? f.geometry.coordinates[0]
+                  : f.geometry.coordinates.flat(1);
+                coords.forEach(coord => bounds.extend(coord));
+              });
+              map.fitBounds(bounds, { padding: 30, maxZoom: 13 });
+
+              map.addControl(new mapboxgl.NavigationControl({ visualizePitch: true }), "top-right");
+
+              loader.style.display = "none";
+            });
+
+            // 👉 Add suggestions from backend
+            const suggestionsHTML = data.suggestions
+              .split(/\n\s*[-•*]\s+/)
+              .filter(s => s.trim())
+              .map(s => `<li>${s.trim()}</li>`)
+              .join("");
+
+            if (suggestionsHTML) {
+              const suggestionContainer = document.getElementById("suggestion-container");
+              const suggestionList = document.getElementById("suggestions");
+              suggestionList.innerHTML = `<ul class="list-disc list-inside space-y-4">${suggestionsHTML}</ul>`;
+              suggestionContainer.classList.remove("hidden");
+            }
+
+          } catch (err) {
+            console.error("Error loading flood data:", err);
+            document.getElementById("map-loader").innerHTML =
+              "<p class='text-red-600 p-4 text-center font-semibold'>Failed to load flood risk data.</p>";
+          }
+        }
+
+        // Initial load
+        window.addEventListener("load", () => {
+          const district = "{{ district }}";
+          const stakeholder = "{{ stakeholder }}";
+          loadFloodData(district, stakeholder);
+        });
+      }
+    </script>
+  </body>
+</html>

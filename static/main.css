@@ -1,0 +1,157 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f0f4f8;
+    color: #333;
+    padding: 20px;
+    max-width: 600px;
+    margin: auto;
+}
+
+h1, h2 {
+    color: #004080;
+    text-align: center;
+}
+
+form {
+    background-color: #ffffff;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+label {
+    display: block;
+    margin-top: 15px;
+    font-weight: bold;
+}
+
+input[type="text"],
+select {
+    width: 100%;
+    padding: 10px;
+    margin-top: 5px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+}
+
+button {
+    margin-top: 20px;
+    padding: 10px 20px;
+    background-color: #0066cc;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #004080;
+}
+
+p {
+    font-size: 16px;
+    margin-top: 10px;
+}
+/* Reset some base styles */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #e0f7fa, #e1f5fe);
+    color: #333;
+    padding: 40px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+}
+
+/* Center container card */
+.container {
+    background: white;
+    padding: 30px 40px;
+    border-radius: 15px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 500px;
+}
+
+/* Headings */
+h1, h2 {
+    text-align: center;
+    color: #004d99;
+    margin-bottom: 20px;
+}
+
+/* Labels and inputs */
+label {
+    display: block;
+    margin-top: 20px;
+    font-weight: 600;
+    color: #333;
+}
+
+input[type="text"],
+select {
+    width: 100%;
+    padding: 12px 14px;
+    margin-top: 6px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    font-size: 16px;
+    transition: 0.3s ease;
+}
+
+input[type="text"]:focus,
+select:focus {
+    border-color: #3399ff;
+    box-shadow: 0 0 5px rgba(51, 153, 255, 0.5);
+    outline: none;
+}
+
+/* Button style */
+button {
+    width: 100%;
+    padding: 14px;
+    margin-top: 30px;
+    background-color: #007acc;
+    color: white;
+    font-size: 16px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+button:hover {
+    background-color: #005b99;
+}
+
+/* Dashboard text formatting */
+p {
+    font-size: 18px;
+    margin: 10px 0;
+    color: #444;
+    text-align: center;
+}
+.forecast-grid {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.forecast-card {
+    background: #f7f9fc;
+    border: 1px solid #dbe2ea;
+    border-radius: 10px;
+    padding: 1rem;
+    text-align: center;
+    width: 120px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}

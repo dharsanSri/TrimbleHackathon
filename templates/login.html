@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Login - Emergency Dashboard</title>
+    <link rel="stylesheet" href="/static/main.css" />
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background: #f0f2f5;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+      }
+      .container {
+        background: #fff;
+        padding: 2rem;
+        border-radius: 12px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        width: 300px;
+      }
+      h1 {
+        text-align: center;
+        margin-bottom: 1rem;
+      }
+      label {
+        margin-top: 1rem;
+        display: block;
+      }
+      input,
+      select {
+        width: 100%;
+        padding: 0.5rem;
+        margin-top: 0.3rem;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+      }
+      button {
+        margin-top: 1.5rem;
+        width: 100%;
+        padding: 0.7rem;
+        background-color: #007bff;
+        border: none;
+        color: white;
+        font-size: 1rem;
+        border-radius: 6px;
+        cursor: pointer;
+      }
+      button:hover {
+        background-color: #0056b3;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>District Login</h1>
+      <form action="/login" method="post">
+        <label for="name">Name:</label>
+        <input type="text" name="name" id="name" required />
+
+        <label for="phone">Phone Number:</label>
+        <input
+          type="tel"
+          name="phone"
+          id="phone"
+          required
+          pattern="[0-9]{10}"
+          title="Enter a 10-digit phone number"
+        />
+
+        <label for="district">District:</label>
+        <select name="district" id="district" required>
+          {% for d in districts %}
+          <option value="{{ d }}">{{ d }}</option>
+          {% endfor %}
+        </select>
+
+        <label for="stakeholder">Stakeholder:</label>
+        <select name="stakeholder" id="stakeholder" required>
+          {% for s in stakeholders %}
+          <option value="{{ s }}">{{ s }}</option>
+          {% endfor %}
+        </select>
+
+        <button type="submit">Login</button>
+      </form>
+    </div>
+  </body>
+</html>
